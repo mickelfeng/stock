@@ -7,15 +7,8 @@ dnl without editing.
 
 dnl If your extension references something external, use with:
 
-dnl PHP_ARG_WITH(stock, for stock support,
-dnl Make sure that the comment is aligned:
-dnl [  --with-stock             Include stock support])
-
-dnl Otherwise use enable:
-
-dnl PHP_ARG_ENABLE(stock, whether to enable stock support,
-dnl Make sure that the comment is aligned:
-dnl [  --enable-stock           Enable stock support])
+PHP_ARG_WITH(stock, for stock support,
+[  --enable-stock           Enable stock support])
 
 if test "$PHP_STOCK" != "no"; then
   dnl Write more examples of tests here...
