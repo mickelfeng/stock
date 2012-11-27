@@ -34,7 +34,22 @@ extern zend_module_entry stock_module_entry;
 
 #ifdef ZTS
 #include "TSRM.h"
+int stock_global_id;
+#define TEST_G(v) TSTM(stock_global_id, zend_stock_global *, v)
 #endif
+
+struct _stock_node{
+        char *code;
+        char *name;
+        struct _stock_node *next;
+};
+
+typedef struct _stock_node stock;
+ZEND_BEGIN_MODULE_GLOBALS(stock)
+        unsigned long counter;
+        char *str;
+        stock *list;
+ZEND_END_MODULE_GLOBALS(stock)
 
 PHP_MINIT_FUNCTION(stock);
 PHP_MSHUTDOWN_FUNCTION(stock);
@@ -42,7 +57,8 @@ PHP_RINIT_FUNCTION(stock);
 PHP_RSHUTDOWN_FUNCTION(stock);
 PHP_MINFO_FUNCTION(stock);
 
-PHP_FUNCTION(confirm_stock_compiled);	/* For testing, remove later. */
+PHP_FUNCTION(extact_stock_code);
+PHP_FUNCTION(extact_stock_name);
 
 /* 
   	Declare any global variables you may need between the BEGIN

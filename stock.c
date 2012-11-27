@@ -39,8 +39,8 @@ static int le_stock;
  * Every user visible function must have an entry in stock_functions[].
  */
 const zend_function_entry stock_functions[] = {
-	PHP_FE(extract_stock_code,	NULL)		/* For testing, remove later. */
-	PHP_FE(extract_stock_name,	NULL)		/* For testing, remove later. */
+	PHP_FE(stock_extract_code,	NULL)		/* For testing, remove later. */
+	PHP_FE(stock_extract_name,	NULL)		/* For testing, remove later. */
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -160,7 +160,6 @@ PHP_RSHUTDOWN_FUNCTION(stock)
 
 /* {{{ PHP_MINFO_FUNCTION
  */
-*/
 PHP_MINFO_FUNCTION(stock)
 {
 	php_info_print_table_start();
@@ -173,7 +172,8 @@ PHP_MINFO_FUNCTION(stock)
 }
 /* }}} */
 
-
+/**
+	extract stock code from content
 */
 PHP_FUNCTION(stock_extract_code)
 {
@@ -192,7 +192,9 @@ PHP_FUNCTION(stock_extract_code)
         }
         RETURN_NULL();
 }
-
+/**
+	extract stock name from content
+*/
 
 PHP_FUNCTION(stock_extract_name)
 {
