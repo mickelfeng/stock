@@ -30,7 +30,7 @@
 /* If you declare any globals in php_stock.h uncomment this:
 ZEND_DECLARE_MODULE_GLOBALS(stock)
 */
-
+ZEND_DECLARE_MODULE_GLOBALS(stock);
 /* True global resources - no need for thread safety here */
 static int le_stock;
 
@@ -39,8 +39,9 @@ static int le_stock;
  * Every user visible function must have an entry in stock_functions[].
  */
 const zend_function_entry stock_functions[] = {
-	PHP_FE(confirm_stock_compiled,	NULL)		/* For testing, remove later. */
-	PHP_FE_END	/* Must be the last line in stock_functions[] */
+	PHP_FE(extract_stock_code,	NULL)		/* For testing, remove later. */
+	PHP_FE(extract_stock_name,	NULL)		/* For testing, remove later. */
+	{NULL, NULL, NULL}
 };
 /* }}} */
 
@@ -88,7 +89,33 @@ static void php_stock_init_globals(zend_stock_globals *stock_globals)
 }
 */
 /* }}} */
+static void stock_globals_ctor(zend_stock_globals *stock_globals TSRMLS_DC)
+{
+        FILE *fp;
+        char code[6];
+        char name[13];
+        stock *list, *rear, *p;
+        list = pemalloc(sizeof(stock), 1);
+        fp = fopen("stock", "rb");
+        rear = list;
+        rear->next = NULL;
+        while (!feof(fp)) {
+                fscanf(fp, "%s%s", code, name);
+                p = pemalloc(sizeof(stock), 1);
+                p->code = pestrdup(code, 1);
+                p->name = pestrdup(name, 1);
+                p->next = NULL;
+                rear->next = p;
+                rear = p;
+        }
+        fclose(fp);
+        stock_globals->list = list;
+}
 
+static void stock_globals_dtor(zend_stock_globals *stock_globals TSRMLS_DC)
+{
+	stock->list = NULL;
+}
 /* {{{ PHP_MINIT_FUNCTION
  */
 PHP_MINIT_FUNCTION(stock)
@@ -96,6 +123,11 @@ PHP_MINIT_FUNCTION(stock)
 	/* If you have INI entries, uncomment these lines 
 	REGISTER_INI_ENTRIES();
 	*/
+        #ifdef ZTS
+                ts_allocate_id(stock_global_id, 4, stock_globals_ctor, stock_globals_dtor);
+        #else
+                stock_globals_ctor(&stock_globals TSRMLS_DC);
+        #endif	
 	return SUCCESS;
 }
 /* }}} */
@@ -104,9 +136,6 @@ PHP_MINIT_FUNCTION(stock)
  */
 PHP_MSHUTDOWN_FUNCTION(stock)
 {
-	/* uncomment this line if you have INI entries
-	UNREGISTER_INI_ENTRIES();
-	*/
 	return SUCCESS;
 }
 /* }}} */
@@ -131,6 +160,7 @@ PHP_RSHUTDOWN_FUNCTION(stock)
 
 /* {{{ PHP_MINFO_FUNCTION
  */
+*/
 PHP_MINFO_FUNCTION(stock)
 {
 	php_info_print_table_start();
@@ -144,33 +174,43 @@ PHP_MINFO_FUNCTION(stock)
 /* }}} */
 
 
-/* Remove the following function when you have succesfully modified config.m4
-   so that your module can be compiled into PHP, it exists only for testing
-   purposes. */
-
-/* Every user-visible function in PHP should document itself in the source */
-/* {{{ proto string confirm_stock_compiled(string arg)
-   Return a string to confirm that the module is compiled in */
-PHP_FUNCTION(confirm_stock_compiled)
-{
-	char *arg = NULL;
-	int arg_len, len;
-	char *strg;
-
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &arg, &arg_len) == FAILURE) {
-		return;
-	}
-
-	len = spprintf(&strg, 0, "Congratulations! You have successfully modified ext/%.78s/config.m4. Module %.78s is now compiled into PHP.", "stock", arg);
-	RETURN_STRINGL(strg, len, 0);
-}
-/* }}} */
-/* The previous line is meant for vim and emacs, so it can correctly fold and 
-   unfold functions in source code. See the corresponding marks just before 
-   function definition, where the functions purpose is also documented. Please 
-   follow this convention for the convenience of others editing your code.
 */
+PHP_FUNCTION(stock_extract_code)
+{
+        stock *list, *p;
+        char *str;
+        int str_len;
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &str, &str_len) == FAILURE) {
+                return;
+        }
+        list = stock_globals.list;
+        p = list->next;
+        while (p) {
+                if (strstr(str, p->code))
+                        RETURN_STRING(p->code, 1);
+                p = p->next;
+        }
+        RETURN_NULL();
+}
 
+
+PHP_FUNCTION(stock_extract_name)
+{
+        stock *list, *p;
+        char *str;
+        int str_len;
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &str, &str_len) == FAILURE) {
+                return;
+        }
+        list = stock_globals.list;
+        p = list->next;
+        while (p) {
+                if (strstr(str, p->name))
+                        RETURN_STRING(p->name, 1);
+                p = p->next;
+        }
+        RETURN_NULL();
+}
 
 /*
  * Local variables:
