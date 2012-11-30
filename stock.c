@@ -30,7 +30,8 @@
 /* If you declare any globals in php_stock.h uncomment this:
 ZEND_DECLARE_MODULE_GLOBALS(stock)
 */
-ZEND_DECLARE_MODULE_GLOBALS(stock);
+ZEND_DECLARE_MODULE_GLOBALS(stock)
+
 /* True global resources - no need for thread safety here */
 static int le_stock;
 
@@ -88,7 +89,7 @@ static void php_stock_init_globals(zend_stock_globals *stock_globals)
 	stock_globals->global_string = NULL;
 }
 */
-/* }}} */
+
 static void stock_globals_ctor(zend_stock_globals *stock_globals TSRMLS_DC)
 {
         FILE *fp;
@@ -112,10 +113,12 @@ static void stock_globals_ctor(zend_stock_globals *stock_globals TSRMLS_DC)
         stock_globals->list = list;
 }
 
-static void stock_globals_dtor(zend_stock_globals *stock_globals TSRMLS_DC)
+static void stock_globals_dcor(zend_stock_globals *stock_globals TSRMLS_DC)
 {
-	stock->list = NULL;
 }
+
+/* }}} */
+
 /* {{{ PHP_MINIT_FUNCTION
  */
 PHP_MINIT_FUNCTION(stock)
@@ -124,10 +127,10 @@ PHP_MINIT_FUNCTION(stock)
 	REGISTER_INI_ENTRIES();
 	*/
         #ifdef ZTS
-                ts_allocate_id(stock_global_id, 4, stock_globals_ctor, stock_globals_dtor);
+                ts_allocate_id(&stock_global_id, sizeof(stock_global_id), stock_globals_ctor, stock_globals_dtor);
         #else
-                stock_globals_ctor(&stock_globals TSRMLS_DC);
-        #endif	
+                stock_globals_ctor(&stock_globals TSRMLS_CC);
+        #endif
 	return SUCCESS;
 }
 /* }}} */
@@ -136,6 +139,9 @@ PHP_MINIT_FUNCTION(stock)
  */
 PHP_MSHUTDOWN_FUNCTION(stock)
 {
+	/* uncomment this line if you have INI entries
+	UNREGISTER_INI_ENTRIES();
+	*/
 	return SUCCESS;
 }
 /* }}} */
@@ -172,9 +178,16 @@ PHP_MINFO_FUNCTION(stock)
 }
 /* }}} */
 
-/**
-	extract stock code from content
-*/
+
+/* Remove the following function when you have succesfully modified config.m4
+   so that your module can be compiled into PHP, it exists only for testing
+   purposes. */
+
+/* Every user-visible function in PHP should document itself in the source */
+/* {{{ proto string confirm_stock_compiled(string arg)
+   Return a string to confirm that the module is compiled in */
+/* }}} */
+
 PHP_FUNCTION(stock_extract_code)
 {
         stock *list, *p;
@@ -193,7 +206,7 @@ PHP_FUNCTION(stock_extract_code)
         RETURN_NULL();
 }
 /**
-	extract stock name from content
+        extract stock name from content
 */
 
 PHP_FUNCTION(stock_extract_name)
@@ -213,6 +226,13 @@ PHP_FUNCTION(stock_extract_name)
         }
         RETURN_NULL();
 }
+
+/* The previous line is meant for vim and emacs, so it can correctly fold and 
+   unfold functions in source code. See the corresponding marks just before 
+   function definition, where the functions purpose is also documented. Please 
+   follow this convention for the convenience of others editing your code.
+*/
+
 
 /*
  * Local variables:

@@ -1,0 +1,8 @@
+stock.lo: /home/huangyongqiang/git/php-src-5.4/ext/stock/stock.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/home/huangyongqiang/git/php-src-5.4/ext/stock $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /home/huangyongqiang/git/php-src-5.4/ext/stock/stock.c -o stock.lo 
+$(phplibdir)/stock.la: ./stock.la
+	$(LIBTOOL) --mode=install cp ./stock.la $(phplibdir)
+
+./stock.la: $(shared_objects_stock) $(STOCK_SHARED_DEPENDENCIES)
+	$(LIBTOOL) --mode=link $(CC) $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS) -o $@ -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_stock) $(STOCK_SHARED_LIBADD)
+
